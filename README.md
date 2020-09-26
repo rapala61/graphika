@@ -13,3 +13,6 @@ This project was developed using Python version `3.8.5`. I prefer and suggest th
 Change directories to the root of the project
 
 - Run `pipenv run src/main.py`
+
+## TODO
+- Take tweets, groups and terms as arguments to the script
