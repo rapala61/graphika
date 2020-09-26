@@ -84,16 +84,15 @@ with open(os.path.join(script_dir, '../data/tweets.jsonl')) as tweets:
             # TODO: Refactor into declarative searching in all groups
             if is_in_group(nid, group_1_nids):
                 group = 1
-            if group == 0 and is_in_group(nid, group_2_nids):
+            elif is_in_group(nid, group_2_nids):
                 group = 2
             # store messages 
             nodes[nid] = { 'group': group, 'keywords': []}
         kw_tree = kw_trees.get(group)
         if kw_tree:
-            results = [(kw, twt.get('message_id')) for kw in kw_tree.extract_keywords(txt)]
-            if len(results):
-                for match in results:
-                    nodes[nid]['keywords'].append(match)
+            results = [(kw, msg_id) for kw in kw_tree.extract_keywords(txt)]
+            for match in results:
+                nodes[nid]['keywords'].append(match)
             
 # pp.pprint([ (key, nodes[key]) for key in nodes if len(nodes[key].get('keywords'))])
 
