@@ -4,10 +4,11 @@ import os
 import pprint
 import typing
 
+from flashtext import KeywordProcessor
 from time import perf_counter
 from termcolor import colored
 
-pp = pprint.PrettyPrinter(indent=4)
+pp = pprint.PrettyPrinter(indent=2)
 t_start = perf_counter()
 script_dir = os.path.dirname(__file__)
 
@@ -37,18 +38,33 @@ def get_nids(f: typing.TextIO) -> list:
             if nid:
                 nids.add(int(nid))
     return sorted(nids)
+
+# Returns keywords search tree 
+def get_search_tree(f: typing.TextIO) -> KeywordProcessor:
+    kw_tree = KeywordProcessor()
+    with f as kw_lines:
+        kw_tree.add_keywords_from_list([kw.strip() for kw in kw_lines])
+    return kw_tree
         
+# Outputs the matched terms to the message id that contains them
+def output_results(nodes: dict) -> None:
+    for key in nodes:
+        kws = nodes[key].get('keywords')
+        if len(kws):
+            print(*kws)
+
 # Read in terms1
-t1 = open(os.path.join(script_dir, '../data/terms1.txt'))
+kw_tree_1 = get_search_tree(open(os.path.join(script_dir, '../data/terms1.txt')))
 # Read in terms2
-t2 = open(os.path.join(script_dir, '../data/terms2.txt'))
+kw_tree_2 = get_search_tree(open(os.path.join(script_dir, '../data/terms2.txt')))
 # Read in nodes1
-group_1 = get_nids(open(os.path.join(script_dir, '../data/nodes1.txt')))
+group_1_nids = get_nids(open(os.path.join(script_dir, '../data/nodes1.txt')))
 # Read in nodes2
-group_2 = get_nids(open(os.path.join(script_dir, '../data/nodes2.txt')))
+group_2_nids = get_nids(open(os.path.join(script_dir, '../data/nodes2.txt')))
 
 # Memoize tweets to cut on searching time
 nodes = {}
+kw_trees = {1:kw_tree_1, 2:kw_tree_2}
 
 # Read tweets
 with open(os.path.join(script_dir, '../data/tweets.jsonl')) as tweets:
@@ -62,18 +78,26 @@ with open(os.path.join(script_dir, '../data/tweets.jsonl')) as tweets:
         # If the tweet is in memory let's just append the messages.
         # No need re-check group membership
         if in_mem_tw:
-            in_mem_tw['messages'].append(txt)
+            group = in_mem_tw.get('group')
         else:
             # Check if Twitter user is member of either group #1 or #2.
             # TODO: Refactor into declarative searching in all groups
-            if is_in_group(nid, group_1):
+            if is_in_group(nid, group_1_nids):
                 group = 1
-            if group == 0 and is_in_group(nid, group_2):
+            if group == 0 and is_in_group(nid, group_2_nids):
                 group = 2
             # store messages 
-            nodes[nid] = { 'group': group, 'messages': [txt]}
+            nodes[nid] = { 'group': group, 'keywords': []}
+        kw_tree = kw_trees.get(group)
+        if kw_tree:
+            results = [(kw, twt.get('message_id')) for kw in kw_tree.extract_keywords(txt)]
+            if len(results):
+                for match in results:
+                    nodes[nid]['keywords'].append(match)
+            
+# pp.pprint([ (key, nodes[key]) for key in nodes if len(nodes[key].get('keywords'))])
 
-# pp.pprint(nodes)
+output_results(nodes)
 
 t_end = perf_counter()
 t_total = (t_end-t_start)*1000
