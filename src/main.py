@@ -75,8 +75,8 @@ with open(os.path.join(script_dir, '../data/tweets.jsonl')) as tweets:
         nid = int(twt.get('node_id'))
         in_mem_tw = nodes.get(nid)
         group = 0
-        # If the tweet is in memory let's just append the messages.
-        # No need re-check group membership
+        # If the tweet is in memory, grab group membership from it.
+        # No need re-check group membership.
         if in_mem_tw:
             group = in_mem_tw.get('group')
         else:
@@ -86,14 +86,19 @@ with open(os.path.join(script_dir, '../data/tweets.jsonl')) as tweets:
                 group = 1
             elif is_in_group(nid, group_2_nids):
                 group = 2
-            # store messages 
-            nodes[nid] = { 'group': group, 'keywords': []}
+            # store tweet and metadata in memory
+            nodes[nid] = { 'group': group, 'keywords': set()}
+        # We have 2 search trees (one per group membership).
+        # We need to search for the correct terms according to the group number.
         kw_tree = kw_trees.get(group)
         if kw_tree:
             results = [(kw, msg_id) for kw in kw_tree.extract_keywords(txt)]
             for match in results:
-                nodes[nid]['keywords'].append(match)
-            
+                # keywords is a set. This way we won't save multiple matches
+                # of the same keyword in the text.
+                nodes[nid]['keywords'].add(match)
+
+# Used for inspecting in-memory tweets
 # pp.pprint([ (key, nodes[key]) for key in nodes if len(nodes[key].get('keywords'))])
 
 output_results(nodes)
