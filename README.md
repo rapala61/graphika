@@ -32,7 +32,12 @@ These instructions are for running the script from a Mac environment. Any other 
 There is an example scheduled Github Action job [included](/.github/workflows/nightly.yml) in this repo. It can be a good starter for a custom GA job.
 
 # TODO
-- Take tweets, groups and terms as arguments to the script
+
+## V2
 - Add unit tests 
+- Take tweets, groups and terms as arguments to the script.
+
+## v3
+- Create interfaces to obtain terms, node groups, and tweets in a source-agnostic way.
 
 Made with :heart: by Rafa Pacas from 🇵🇦 and 🇺🇸.
