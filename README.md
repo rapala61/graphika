@@ -29,17 +29,34 @@ These instructions are for running the script from a Mac environment. Any other 
 - Run `pipenv install`
 - Execute the script by running `pipenv run src/main.py`
 
-## Running as a Github Action (Scheduled job)
+## Running as Scheduled job
 
-There is an example scheduled Github Action job [included](/.github/workflows/nightly.yml) in this repo. It can be a good starter for a custom GA job.
+There are many ways to run this script as a schedules job. The best way to do it would depend entirely on the already existing architecture and expertise of the team. Here are 2 ways to schedule the job.
+
+### Github Actions
+
+Using Github Actions is as simple as adding a `.yml` file and let Github run the job for us. The benefits are many. We are already using Github in some capacity in our ecosystem. Github usually has stellar documentation. A huge community. There is a Marketplace for all types of actions. E.g. Slack integration, CloudWatch logs, etc.
+
+There is an example scheduled Github Action job [included](/.github/workflows/nightly.yml) in this repo. It can be a good starter for a custom job.
+
+### Jenkins
+
+If we are using a managed Jenkins solution or host it in an EC2 instance ourselves. We can schedule a job to pull the github repo, install dependencies and run the script. We can monitor the job via an integration via email, slack, Pagerduty, etc.
 
 # TODO
 
-## V2
-- Add unit tests 
-- Take tweets, groups and terms as arguments to the script.
+This is a list of nice-to-have features/changes if this PoC were to become a production ready tool.
 
-## v3
-- Create interfaces to obtain terms, node groups, and tweets in a source-agnostic way.
+- Add unit tests
+- Eliminate hard coded values from the code and use ENV variables.
+- Create API integrations w/ the sources of terms, node groups, and Tweets.
+    - Implement high level interfaces to obtain terms, node groups, and Tweets in a source-agnostic way.
+- Depending on the scheduling strategy we pick. Implement logging and pipe to a compatible Cloud log manager.
+- If we are storing this data for BI and analysis purposes:
+    - Save the output of the script as a CSV in an S3 bucket.
+        - This is assuming we have a data infrastructure that uses S3 as a data lake or can load data from S3.
+- If we are storing this data into an existing DB:
+    - Store the tuples in the correct collection/table as part of the job.
+
 
 Made with :heart: by Rafa Pacas from 🇵🇦 and 🇺🇸.
