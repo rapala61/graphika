@@ -1,0 +1,23 @@
+name: 'Nightly'
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # Everyday at midnight
+
+jobs:
+  runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v1
+        with:
+          python-version: '3.8.5'
+      - name: Install Pipenv
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pipenv
+      - name: Install dependencies with Pipenv
+        run: |
+          pipenv install
+      - name: Run tweet analysis
+        run: |
+          pipenv run python src/main.py
